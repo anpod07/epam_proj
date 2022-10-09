@@ -1,0 +1,32 @@
+name: my_test_CI
+env:
+  IP_ADDR: "3.120.131.186"
+  SSH_USER: "root"
+  
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  my_build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: copy my html on Runner
+      uses: actions/checkout@v3
+    - name: view my html
+      run: ls -l
+#    - name: ping remote host
+#      run: ping -c2 ${{ env.IP_ADDR }}
+    - name: establish SSH connection
+      run: |
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        echo "${{ secrets.SSH_SECRET_KEY }}" > ~/.ssh/id_rsa && chmod 400 ~/.ssh/id_rsa
+#    - name: test ssh connection
+#      run: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -vT ${{ env.SSH_USER }}@${{ env.IP_ADDR }}
+    - name: deploy my html
+      #run: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ env.SSH_USER }}@${{ env.IP_ADDR }} "hostname && echo 'Welcome!!!' > welcome.txt"
+      run: |
+        scp -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            -r ./* ${{ env.SSH_USER }}@${{ env.IP_ADDR }}:/var/www/html/
