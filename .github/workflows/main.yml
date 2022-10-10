@@ -21,7 +21,7 @@ jobs:
     - name: establish SSH connection
       run: |
         mkdir -p ~/.ssh && chmod 700 ~/.ssh
-        echo "${{ secrets.SSH_SECRET_KEY }}" > ~/.ssh/id_rsa && chmod 400 ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_FRANKFURT_KEY }}" > ~/.ssh/id_rsa && chmod 400 ~/.ssh/id_rsa
 #    - name: test ssh connection
 #      run: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -vT ${{ env.SSH_USER }}@${{ env.IP_ADDR }}
     - name: deploy my html
@@ -30,4 +30,3 @@ jobs:
         scp -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             -r ./* ${{ env.SSH_USER }}@${{ env.IP_ADDR }}:/opt/pyapp/
-            
