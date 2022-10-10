@@ -31,4 +31,8 @@ jobs:
             -o UserKnownHostsFile=/dev/null \
             -r ./* ${{ env.SSH_USER }}@${{ env.IP_ADDR }}:/opt/pyapp/
     - name: restart docker my-pyapp
-      run: docker restart my-pyapp
+      run: |
+        ssh -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            ${{ env.SSH_USER }}@${{ env.IP_ADDR }} \
+            "docker restart my-pyapp"
