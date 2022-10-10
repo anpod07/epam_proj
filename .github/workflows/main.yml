@@ -1,6 +1,6 @@
 name: my_Epam_CD
 env:
-  IP_ADDR: "18.192.214.32"
+  IP_ADDR: "18.159.108.182"
   SSH_USER: "root"
   
 on:
