@@ -1,6 +1,6 @@
 name: my_Epam_CD
 env:
-  IP_ADDR: "3.71.88.130"
+  REGION: "eu-central-1"
   SSH_USER: "root"
   
 on:
@@ -14,25 +14,41 @@ jobs:
     steps:
     - name: copy my html on Runner
       uses: actions/checkout@v3
+
     - name: view my html
       run: ls -l
-#    - name: ping remote host
-#      run: ping -c2 ${{ env.IP_ADDR }}
+
+    - name: init AWS Creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: ${{ env.REGION }}
+
+    - name: get EC2 PublicIP
+      run: |
+        echo "PUBLICIP=$(aws ec2 describe-instances \
+        --filters 'Name=private-ip-address,Values=172.31.23.10' \
+        --query 'Reservations[*].Instances[*].PublicIpAddress' \
+        --output text)" >> $GITHUB_ENV
+
+    - name: print PublicIP
+      run: echo ${{ env.PUBLICIP }}
+
     - name: establish SSH connection
       run: |
         mkdir -p ~/.ssh && chmod 700 ~/.ssh
         echo "${{ secrets.SSH_FRANKFURT_KEY }}" > ~/.ssh/id_rsa && chmod 400 ~/.ssh/id_rsa
-#    - name: test ssh connection
-#      run: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -vT ${{ env.SSH_USER }}@${{ env.IP_ADDR }}
+
     - name: deploy my html
-      #run: ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ env.SSH_USER }}@${{ env.IP_ADDR }} "hostname && echo 'Welcome!!!' > welcome.txt"
       run: |
         scp -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            -r ./* ${{ env.SSH_USER }}@${{ env.IP_ADDR }}:/opt/pyapp/
+            -r ./* ${{ env.SSH_USER }}@${{ env.PUBLICIP }}:/opt/pyapp/
+
     - name: restart docker my-pyapp
       run: |
         ssh -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            ${{ env.SSH_USER }}@${{ env.IP_ADDR }} \
+            ${{ env.SSH_USER }}@${{ env.PUBLICIP }} \
             "docker restart my-pyapp"
